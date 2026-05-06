@@ -1,0 +1,253 @@
+#!/usr/bin/env python3
+"""
+📱 DARKTRACER v2.0 - Advanced Digital Footprint Intelligence
+Trace anyone using phone number, username, email, IP, or name
+Powered by AI
+"""
+
+import argparse
+import sys
+import json
+from datetime import datetime
+from rich.console import Console
+from rich.panel import Panel
+from rich.prompt import Confirm
+from rich.table import Table
+
+# Import modules (create them if they exist)
+try:
+    from modules.phone_tracer import PhoneTracer
+except:
+    print("Creating phone_tracer module...")
+    import subprocess
+    subprocess.run(["touch", "modules/phone_tracer.py"])
+
+try:
+    from modules.social_tracer import SocialTracer
+except:
+    print("Creating social_tracer module...")
+
+try:
+    from modules.email_tracer import EmailTracer
+except:
+    print("Creating email_tracer module...")
+
+try:
+    from modules.ip_tracer import IPTracer
+except:
+    print("Creating ip_tracer module...")
+
+try:
+    from modules.ai_analyzer import AIAnalyzer
+from modules.phone_tracker import PhoneTracker
+except:
+    print("Creating ai_analyzer module...")
+
+console = Console()
+
+class DarkTracer:
+    def __init__(self):
+        self.results = {}
+        
+    def banner(self):
+        console.print("""
+╔══════════════════════════════════════════════════════════════════╗
+║                    📱 DARKTRACER v2.0 📱                          ║
+║            Advanced Digital Footprint Intelligence               ║
+║      Phone | Social | Email | IP | AI-Powered Analysis           ║
+║                    ⚠️ Authorized Use Only ⚠️                     ║
+╚══════════════════════════════════════════════════════════════════╝
+        """, style="bold cyan")
+    
+    def ethical_check(self):
+        console.print("\n[bold red]⚠️  ETHICAL USE ONLY ⚠️[/]")
+        console.print("This tool is for authorized investigations only.\n")
+        answer = input("Do you have proper authorization? (yes/no): ")
+        if answer.lower() not in ['yes', 'y']:
+            console.print("[red]❌ Authorization required. Exiting.[/]")
+            return False
+        return True
+    
+    def trace_ip(self, ip_address):
+        """Trace IP address"""
+        console.print(f"\n[bold cyan]🌐 Tracing IP: {ip_address}[/]\n")
+        
+        import requests
+        try:
+            response = requests.get(f"http://ip-api.com/json/{ip_address}", timeout=10)
+            data = response.json()
+            
+            if data.get('status') == 'success':
+                table = Table(title="IP Intelligence Report")
+                table.add_column("Attribute", style="cyan")
+                table.add_column("Value", style="white")
+                
+                table.add_row("IP Address", data.get('query', ip_address))
+                table.add_row("Country", data.get('country', 'Unknown'))
+                table.add_row("City", data.get('city', 'Unknown'))
+                table.add_row("Region", data.get('regionName', 'Unknown'))
+                table.add_row("ISP", data.get('isp', 'Unknown'))
+                table.add_row("Latitude", str(data.get('lat', 'N/A')))
+                table.add_row("Longitude", str(data.get('lon', 'N/A')))
+                table.add_row("Timezone", data.get('timezone', 'Unknown'))
+                
+                console.print(table)
+                
+                console.print(f"\n🗺️ Google Maps: https://www.google.com/maps?q={data.get('lat')},{data.get('lon')}")
+                return data
+            else:
+                console.print("[red]Failed to get IP information[/]")
+        except Exception as e:
+            console.print(f"[red]Error: {e}[/]")
+        return None
+    
+    def trace_phone(self, phone_number):
+        from modules.phone_tracker import PhoneTracker
+        tracker = PhoneTracker()
+        return tracker.trace(phone_number)
+        """Trace phone number"""
+        console.print(f"\n[bold cyan]📞 Tracing Phone: {phone_number}[/]\n")
+        
+        import phonenumbers
+        from phonenumbers import carrier, geocoder
+        
+        try:
+            parsed = phonenumbers.parse(phone_number, None)
+            if phonenumbers.is_valid_number(parsed):
+                table = Table(title="Phone Intelligence Report")
+                table.add_column("Attribute", style="cyan")
+                table.add_column("Value", style="white")
+                
+                table.add_row("Country", geocoder.description_for_number(parsed, "en"))
+                table.add_row("Carrier", carrier.name_for_number(parsed, "en"))
+                table.add_row("Valid", "Yes")
+                table.add_row("Possible Location", geocoder.description_for_number(parsed, "en"))
+                
+                console.print(table)
+                return True
+            else:
+                console.print("[red]Invalid phone number[/]")
+        except Exception as e:
+            console.print(f"[red]Error: {e}[/]")
+        return None
+    
+    def trace_username(self, username):
+        """Trace username across platforms"""
+        console.print(f"\n[bold cyan]🔍 Tracing Username: {username}[/]\n")
+        
+        platforms = {
+            "GitHub": f"https://github.com/{username}",
+            "Twitter": f"https://twitter.com/{username}",
+            "Instagram": f"https://instagram.com/{username}/",
+            "Reddit": f"https://reddit.com/user/{username}",
+            "LinkedIn": f"https://linkedin.com/in/{username}",
+        }
+        
+        table = Table(title=f"Social Media Profiles for: {username}")
+        table.add_column("Platform", style="cyan")
+        table.add_column("URL", style="green")
+        
+        for platform, url in platforms.items():
+            table.add_row(platform, url)
+        
+        console.print(table)
+        return True
+    
+    def trace_email(self, email):
+        """Trace email address"""
+        console.print(f"\n[bold cyan]📧 Tracing Email: {email}[/]\n")
+        
+        domain = email.split('@')[1]
+        
+        table = Table(title="Email Intelligence Report")
+        table.add_column("Attribute", style="cyan")
+        table.add_column("Value", style="white")
+        
+        table.add_row("Email", email)
+        table.add_row("Domain", domain)
+        table.add_row("Breach Status", "Checking... (simulated)")
+        
+        console.print(table)
+        console.print("\n[green]✅ No breaches found in simulated check[/]")
+        return True
+    
+    def interactive_mode(self):
+        console.print("\n[bold cyan]📱 DarkTracer Interactive Mode[/]\n")
+        console.print("Commands:")
+        console.print("  • ip <address>      - Trace IP address")
+        console.print("  • phone <number>    - Trace phone number")
+        console.print("  • social <username> - Trace social media")
+        console.print("  • email <address>   - Trace email")
+        console.print("  • myip              - Trace your own IP")
+        console.print("  • exit              - Exit\n")
+        
+        while True:
+            cmd = input("darktracer> ")
+            
+            if cmd.startswith("ip "):
+                ip = cmd.split()[1]
+                self.trace_ip(ip)
+            elif cmd.startswith("phone "):
+                phone = cmd.split()[1]
+                self.trace_phone(phone)
+            elif cmd.startswith("social "):
+                username = cmd.split()[1]
+                self.trace_username(username)
+            elif cmd.startswith("email "):
+                email = cmd.split()[1]
+                self.trace_email(email)
+            elif cmd == "myip":
+                import requests
+                try:
+                    myip = requests.get('https://api.ipify.org').text
+                    self.trace_ip(myip)
+                except:
+                    console.print("[red]Could not detect IP[/]")
+            elif cmd == "exit":
+                break
+            else:
+                console.print("[red]Unknown command[/]")
+    
+    def run(self):
+        self.banner()
+        
+        if not self.ethical_check():
+            return
+        
+        parser = argparse.ArgumentParser(description="DarkTracer - Digital Footprint Intelligence")
+        parser.add_argument("--ip", help="IP address to trace")
+        parser.add_argument("--phone", help="Phone number to trace")
+        parser.add_argument("--username", help="Username to trace")
+        parser.add_argument("--email", help="Email to trace")
+        parser.add_argument("--myip", action="store_true", help="Trace your own IP")
+        parser.add_argument("--interactive", action="store_true", help="Interactive mode")
+        
+        args = parser.parse_args()
+        
+        if args.interactive:
+            self.interactive_mode()
+        elif args.ip:
+            self.trace_ip(args.ip)
+        elif args.phone:
+            self.trace_phone(args.phone)
+        elif args.username:
+            self.trace_username(args.username)
+        elif args.email:
+            self.trace_email(args.email)
+        elif args.myip:
+            import requests
+            try:
+                myip = requests.get('https://api.ipify.org').text
+                self.trace_ip(myip)
+            except:
+                console.print("[red]Could not detect IP[/]")
+        else:
+            parser.print_help()
+
+if __name__ == "__main__":
+    try:
+        app = DarkTracer()
+        app.run()
+    except KeyboardInterrupt:
+        console.print("\n[yellow]📱 DarkTracer shutdown. Goodbye![/]")
+        sys.exit(0)
